@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CSV 편집기</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 40px 20px;
+      background: #f4f6fa;
+      color: #222;
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      max-width: 760px;
+      margin: auto;
+      padding: 30px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 8px 30px #0000000d;
+    }
+
+    .title-row,
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .title-row {
+      justify-content: flex-start;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 26px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 19px;
+    }
+
+    .info-button {
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      flex-shrink: 0;
+      border: 1px solid #cbd5e1;
+      border-radius: 50%;
+      background: #f8fafc;
+      color: #2563eb;
+      font-family: Georgia, serif;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .info-button[aria-expanded="true"] {
+      background: #2563eb;
+      color: white;
+    }
+
+    .help {
+      margin-top: 16px;
+      padding: 16px;
+      border: 1px solid #bfdbfe;
+      border-radius: 10px;
+      background: #eff6ff;
+      color: #334155;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .help ul {
+      margin: 8px 0 16px;
+      padding-left: 20px;
+    }
+
+    label {
+      display: block;
+      margin: 18px 0 8px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    input:not([type="checkbox"]),
+    select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #d0d5dd;
+      border-radius: 8px;
+      background: white;
+      font-size: 15px;
+    }
+
+    select:disabled {
+      background: #f1f5f9;
+      color: #94a3b8;
+    }
+
+    .section {
+      margin-top: 24px;
+      padding: 22px;
+      border: 1px solid #dce3ed;
+      border-radius: 12px;
+    }
+
+    .converter-section {
+      border-top: 4px solid #7c3aed;
+    }
+
+    .split-section {
+      border-top: 4px solid #2563eb;
+    }
+
+    .apply-label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-shrink: 0;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      margin: 0;
+      accent-color: #2563eb;
+    }
+
+    .two-columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .status {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 8px;
+      background: #f1f5f9;
+      font-size: 14px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      line-height: 1.7;
+    }
+
+    .save-area {
+      margin-top: 26px;
+      padding-top: 22px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .save-area .status {
+      margin-top: 0;
+      background: #eff6ff;
+      color: #1e40af;
+    }
+
+    .save-button {
+      width: 100%;
+      margin-top: 16px;
+      padding: 15px;
+      border: 0;
+      border-radius: 8px;
+      background: #2563eb;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .save-button:disabled {
+      background: #a8b5cf;
+      cursor: not-allowed;
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 20px 12px;
+      }
+
+      .container {
+        padding: 20px;
+      }
+
+      .section {
+        padding: 16px;
+      }
+
+      .two-columns {
+        grid-template-columns: 1fr;
+        gap: 0;
+      }
+
+      h2 {
+        font-size: 17px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+    <div class="title-row">
+      <h1>CSV 편집기</h1>
+
+      <button
+        id="infoButton"
+        class="info-button"
+        type="button"
+        aria-label="사용 방법"
+        aria-expanded="false"
+        aria-controls="help"
+      >i</button>
+    </div>
+
+    <div id="help" class="help" hidden>
+      <strong>사용 방법</strong>
+      <ul>
+        <li>CSV 파일을 불러온 뒤 사용할 기능의 ‘적용’을 체크하세요.</li>
+        <li>두 기능을 사용하면 UTC/KST 변환 후 날짜별 나누기를 진행합니다.</li>
+        <li>맨 아래 저장 버튼으로 최종 결과를 새 CSV로 저장합니다.</li>
+        <li>설정을 바꿔도 원본 파일은 변경되지 않으며 중복 변환되지 않습니다.</li>
+        <li>파일은 서버로 전송되지 않습니다.</li>
+        <li>첫 번째 행은 열 이름으로 사용합니다.</li>
+        <li>한글이 깨지면 EUC-KR / CP949 인코딩을 선택하세요.</li>
+        <li>저장 파일은 UTF-8 CSV 형식입니다.</li>
+      </ul>
+
+      <strong>UTC/KST 변환</strong>
+      <ul>
+        <li>UTC → KST는 9시간을 더하고, KST → UTC는 9시간을 뺍니다.</li>
+        <li>시간대가 없는 값은 선택한 변환 방향의 원본 시간대로 해석합니다.</li>
+        <li>Z나 +09:00처럼 시간대가 있으면 해당 시간대를 기준으로 변환합니다.</li>
+        <li>결과는 YYYY-MM-DD HH:mm:ss 형식이며 시간대 표시는 붙이지 않습니다.</li>
+        <li>소수점 이하 값은 자릿수와 끝자리 0까지 그대로 유지합니다.</li>
+        <li>예: .001000, .123456, .123456789</li>
+        <li>날짜만 있는 값은 00:00:00으로 처리합니다.</li>
+        <li>변환할 수 없는 셀은 원래 값을 유지합니다.</li>
+      </ul>
+
+      <strong>날짜별 나누기</strong>
+      <ul>
+        <li>선택한 열의 실제 날짜만 중복 없이 날짜순으로 표시합니다.</li>
+        <li>UTC/KST 변환을 적용했다면 변환된 데이터에서 날짜를 추출합니다.</li>
+        <li>시작일과 종료일을 모두 포함합니다.</li>
+        <li>날짜를 읽을 수 없는 행은 나누기 결과에서 제외합니다.</li>
+      </ul>
+
+      <strong>지원 날짜 예시</strong>
+      <div>
+        2026-11-13 / 2026/11/13 / 2026.11.13 / 20261113<br>
+        2026-11-13 15:30:00<br>
+        2026-11-13 15:30:00.001000<br>
+        2026-11-13T15:30:00.123456Z
+      </div>
+    </div>
+
+    <label for="encoding">파일 인코딩</label>
+    <select id="encoding">
+      <option value="utf-8">UTF-8</option>
+      <option value="euc-kr">EUC-KR / CP949</option>
+    </select>
+
+    <label for="file">CSV 파일</label>
+    <input id="file" type="file" accept=".csv,text/csv">
+
+    <div id="fileStatus" class="status" role="status">
+      CSV 파일을 선택해 주세요.
+    </div>
+
+    <section class="section converter-section">
+      <div class="section-header">
+        <h2>UTC/KST 변환기</h2>
+
+        <label class="apply-label">
+          <input id="useConvert" type="checkbox">
+          적용
+        </label>
+      </div>
+
+      <label for="convertColumn">변환할 날짜·시간 열</label>
+      <select id="convertColumn" disabled>
+        <option value="">먼저 CSV 파일을 선택하세요</option>
+      </select>
+
+      <label for="convertDirection">변환 방향</label>
+      <select id="convertDirection" disabled>
+        <option value="utc-to-kst">UTC → KST (+9시간)</option>
+        <option value="kst-to-utc">KST → UTC (-9시간)</option>
+      </select>
+
+      <div id="convertStatus" class="status" role="status">
+        적용하지 않음
+      </div>
+    </section>
+
+    <section class="section split-section">
+      <div class="section-header">
+        <h2>날짜별 나누기</h2>
+
+        <label class="apply-label">
+          <input id="useSplit" type="checkbox" checked>
+          적용
+        </label>
+      </div>
+
+      <label for="dateColumn">날짜가 들어 있는 열</label>
+      <select id="dateColumn" disabled>
+        <option value="">먼저 CSV 파일을 선택하세요</option>
+      </select>
+
+      <div class="two-columns">
+        <div>
+          <label for="startDate">시작일</label>
+          <select id="startDate" disabled>
+            <option value="">날짜 열을 선택하세요</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="endDate">종료일</label>
+          <select id="endDate" disabled>
+            <option value="">날짜 열을 선택하세요</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="splitStatus" class="status" role="status">
+        CSV 파일을 선택해 주세요.
+      </div>
+    </section>
+
+    <!-- 두 기능 칸 밖의 공통 저장 영역 -->
+    <div class="save-area">
+      <div id="resultStatus" class="status" role="status">
+        CSV 파일을 선택해 주세요.
+      </div>
+
+      <button
+        id="saveButton"
+        class="save-button"
+        type="button"
+        disabled
+      >최종 결과 CSV 저장</button>
+    </div>
+  </main>
+
+  <script>
+    const $ = id => document.getElementById(id);
+
+    const fileInput = $("file");
+    const encodingInput = $("encoding");
+    const useConvert = $("useConvert");
+    const useSplit = $("useSplit");
+    const convertColumn = $("convertColumn");
+    const convertDirection = $("convertDirection");
+    const dateColumn = $("dateColumn");
+    const startDate = $("startDate");
+    const endDate = $("endDate");
+    const saveButton = $("saveButton");
+
+    let headers = [];
+    let originalRows = [];
+    let workingRows = [];
+    let finalRows = [];
+    let rowDates = [];
+    let loadedFileName = "";
+    let loadVersion = 0;
+    let convertedCount = 0;
+
+    $("infoButton").addEventListener("click", () => {
+      const expanded =
+        $("infoButton").getAttribute("aria-expanded") === "true";
+
+      $("infoButton").setAttribute(
+        "aria-expanded",
+        String(!expanded)
+      );
+
+      $("help").hidden = expanded;
+    });
+
+    function placeholder(select, text) {
+      select.replaceChildren(new Option(text, ""));
+      select.disabled = true;
+    }
+
+    function parseCSV(text) {
+      text = text.replace(/^\uFEFF/, "");
+
+      const result = [];
+      let row = [];
+      let field = "";
+      let quoted = false;
+
+      for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+
+        if (char === '"') {
+          if (quoted && text[i + 1] === '"') {
+            field += '"';
+            i++;
+          } else if (quoted) {
+            quoted = false;
+          } else if (field === "") {
+            quoted = true;
+          } else {
+            field += char;
+          }
+        } else if (char === "," && !quoted) {
+          row.push(field);
+          field = "";
+        } else if (
+          (char === "\r" || char === "\n") &&
+          !quoted
+        ) {
+          row.push(field);
+          result.push(row);
+
+          row = [];
+          field = "";
+
+          if (char === "\r" && text[i + 1] === "\n") {
+            i++;
+          }
+        } else {
+          field += char;
+        }
+      }
+
+      if (quoted) {
+        throw new Error("CSV의 따옴표가 닫히지 않았습니다.");
+      }
+
+      if (field !== "" || row.length > 0) {
+        row.push(field);
+        result.push(row);
+      }
+
+      return result.filter(row =>
+        row.some(value => value.trim() !== "")
+      );
+    }
+
+    function pad(value, length = 2) {
+      return String(value).padStart(length, "0");
+    }
+
+    // 브라우저의 로컬 시간대에 영향을 받지 않는 날짜 생성·검증
+    function checkedDate(
+      year,
+      month,
+      day,
+      hour = 0,
+      minute = 0,
+      second = 0,
+      millisecond = 0
+    ) {
+      const date = new Date(0);
+
+      date.setUTCFullYear(year, month - 1, day);
+      date.setUTCHours(hour, minute, second, millisecond);
+
+      if (
+        date.getUTCFullYear() !== year ||
+        date.getUTCMonth() !== month - 1 ||
+        date.getUTCDate() !== day ||
+        date.getUTCHours() !== hour ||
+        date.getUTCMinutes() !== minute ||
+        date.getUTCSeconds() !== second ||
+        date.getUTCMilliseconds() !== millisecond
+      ) {
+        return null;
+      }
+
+      return date;
+    }
+
+    // 날짜별 나누기: 셀에 표시된 날짜 부분을 추출
+    function normalizeDate(value) {
+      const text = String(value ?? "").trim();
+
+      const match =
+        text.match(
+          /^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})(?=$|[Tt\s])/
+        ) ||
+        text.match(/^(\d{4})(\d{2})(\d{2})$/);
+
+      if (!match) return null;
+
+      const year = Number(match[1]);
+      const month = Number(match[2]);
+      const day = Number(match[3]);
+
+      if (!checkedDate(year, month, day)) return null;
+
+      return `${pad(year, 4)}-${pad(month)}-${pad(day)}`;
+    }
+
+    // UTC/KST 변환: 소수점 이하 문자열을 원문 그대로 보존
+    function convertDateTime(value) {
+      const text = String(value ?? "").trim();
+
+      const match =
+        text.match(
+          /^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})(?:[Tt\s]+(\d{1,2}):(\d{2})(?::(\d{2})(?:\.(\d+))?)?)?\s*(Z|[+-]\d{2}:?\d{2})?$/i
+        ) ||
+        text.match(/^(\d{4})(\d{2})(\d{2})$/);
+
+      if (!match) return null;
+
+      // .001000 등의 자릿수와 끝자리 0을 유지
+      const fraction = match[7] || "";
+
+      // 소수 초는 계산에 넣지 않고 정수 초까지만 변환
+      const date = checkedDate(
+        Number(match[1]),
+        Number(match[2]),
+        Number(match[3]),
+        Number(match[4] || 0),
+        Number(match[5] || 0),
+        Number(match[6] || 0),
+        0
+      );
+
+      if (!date) return null;
+
+      const toKST =
+        convertDirection.value === "utc-to-kst";
+
+      let sourceOffset = toKST ? 0 : 540;
+      const targetOffset = toKST ? 540 : 0;
+      const zone = match[8];
+
+      // 명시된 시간대가 있으면 우선 적용
+      if (zone) {
+        if (zone.toUpperCase() === "Z") {
+          sourceOffset = 0;
+        } else {
+          const parts = zone.match(
+            /^([+-])(\d{2}):?(\d{2})$/
+          );
+
+          if (!parts) return null;
+
+          const hours = Number(parts[2]);
+          const minutes = Number(parts[3]);
+
+          if (
+            hours > 14 ||
+            minutes > 59 ||
+            (hours === 14 && minutes !== 0)
+          ) {
+            return null;
+          }
+
+          sourceOffset =
+            (parts[1] === "+" ? 1 : -1) *
+            (hours * 60 + minutes);
+        }
+      }
+
+      const output = new Date(
+        date.getTime() +
+        (targetOffset - sourceOffset) * 60000
+      );
+
+      const year = output.getUTCFullYear();
+
+      if (year < 0 || year > 9999) return null;
+
+      let result =
+        `${pad(year, 4)}-` +
+        `${pad(output.getUTCMonth() + 1)}-` +
+        `${pad(output.getUTCDate())} ` +
+        `${pad(output.getUTCHours())}:` +
+        `${pad(output.getUTCMinutes())}:` +
+        `${pad(output.getUTCSeconds())}`;
+
+      if (fraction) {
+        result += "." + fraction;
+      }
+
+      return result;
+    }
+
+    function fillColumns(select, selectedIndex) {
+      const fragment = document.createDocumentFragment();
+
+      headers.forEach((header, index) => {
+        fragment.appendChild(
+          new Option(
+            `${index + 1}. ${header || "(이름 없음)"}`,
+            String(index)
+          )
+        );
+      });
+
+      select.replaceChildren(fragment);
+      select.value = String(selectedIndex);
+    }
+
+    function syncControls() {
+      const loaded = headers.length > 0;
+
+      convertColumn.disabled =
+        !loaded || !useConvert.checked;
+
+      convertDirection.disabled =
+        !loaded || !useConvert.checked;
+
+      dateColumn.disabled =
+        !loaded || !useSplit.checked;
+
+      startDate.disabled =
+        !loaded ||
+        !useSplit.checked ||
+        !startDate.value;
+
+      endDate.disabled =
+        !loaded ||
+        !useSplit.checked ||
+        !endDate.value;
+    }
+
+    // 항상 원본 데이터에서 다시 처리하여 중복 변환 방지
+    function rebuildPipeline(resetRange = false) {
+      syncControls();
+
+      if (!headers.length) {
+        saveButton.disabled = true;
+        return;
+      }
+
+      convertedCount = 0;
+      let example = "";
+
+      if (useConvert.checked) {
+        const column = Number(convertColumn.value);
+
+        workingRows = originalRows.map(row => {
+          const converted = convertDateTime(row[column]);
+
+          if (converted === null) {
+            return row;
+          }
+
+          const copy = [...row];
+          copy[column] = converted;
+          convertedCount++;
+
+          if (!example) {
+            example = `${row[column]} → ${converted}`;
+          }
+
+          return copy;
+        });
+
+        $("convertStatus").textContent =
+          `변환 가능: ${convertedCount.toLocaleString()}행\n` +
+          `변환 불가·빈 값: ` +
+          `${(originalRows.length - convertedCount).toLocaleString()}행 ` +
+          `(원래 값 유지)` +
+          (example ? `\n예시: ${example}` : "");
+      } else {
+        workingRows = originalRows;
+        $("convertStatus").textContent = "적용하지 않음";
+      }
+
+      // 변환 적용 시 변환된 데이터에서 날짜 목록 생성
+      const oldStart = resetRange ? "" : startDate.value;
+      const oldEnd = resetRange ? "" : endDate.value;
+      const column = Number(dateColumn.value);
+
+      rowDates = workingRows.map(row =>
+        normalizeDate(row[column])
+      );
+
+      const dates = [
+        ...new Set(rowDates.filter(Boolean))
+      ].sort();
+
+      if (!dates.length) {
+        placeholder(startDate, "날짜 없음");
+        placeholder(endDate, "날짜 없음");
+      } else {
+        const startOptions =
+          document.createDocumentFragment();
+
+        const endOptions =
+          document.createDocumentFragment();
+
+        dates.forEach(date => {
+          startOptions.appendChild(
+            new Option(date, date)
+          );
+
+          endOptions.appendChild(
+            new Option(date, date)
+          );
+        });
+
+        startDate.replaceChildren(startOptions);
+        endDate.replaceChildren(endOptions);
+
+        startDate.value = dates.includes(oldStart)
+          ? oldStart
+          : dates[0];
+
+        endDate.value = dates.includes(oldEnd)
+          ? oldEnd
+          : dates[dates.length - 1];
+      }
+
+      syncControls();
+      updateFinalResult();
+    }
+
+    function updateFinalResult() {
+      finalRows = [];
+      saveButton.disabled = true;
+
+      if (!headers.length) return;
+
+      let error = "";
+
+      if (useSplit.checked) {
+        if (!startDate.value || !endDate.value) {
+          error =
+            "선택한 열에서 지원하는 날짜를 찾지 못했습니다.";
+
+          $("splitStatus").textContent = error;
+        } else if (startDate.value > endDate.value) {
+          error =
+            "시작일은 종료일보다 늦을 수 없습니다.";
+
+          $("splitStatus").textContent = error;
+        } else {
+          let invalidCount = 0;
+
+          finalRows = workingRows.filter((row, index) => {
+            const date = rowDates[index];
+
+            if (!date) {
+              invalidCount++;
+              return false;
+            }
+
+            return (
+              date >= startDate.value &&
+              date <= endDate.value
+            );
+          });
+
+          $("splitStatus").textContent =
+            `선택 기간: ` +
+            `${startDate.value} ~ ${endDate.value}\n` +
+            `추출 데이터: ` +
+            `${finalRows.length.toLocaleString()}행\n` +
+            `날짜를 읽을 수 없어 제외: ` +
+            `${invalidCount.toLocaleString()}행`;
+        }
+      } else {
+        finalRows = workingRows;
+        $("splitStatus").textContent = "적용하지 않음";
+      }
+
+      if (!useConvert.checked && !useSplit.checked) {
+        $("resultStatus").textContent =
+          "사용할 기능의 ‘적용’을 하나 이상 체크해 주세요.";
+        return;
+      }
+
+      if (error) {
+        $("resultStatus").textContent = error;
+        return;
+      }
+
+      if (useConvert.checked && convertedCount === 0) {
+        $("resultStatus").textContent =
+          "변환 가능한 날짜·시간이 없습니다.\n" +
+          "변환 열을 확인하거나 UTC/KST 변환 적용을 해제해 주세요.";
+        return;
+      }
+
+      const steps = [];
+
+      if (useConvert.checked) {
+        steps.push(
+          convertDirection.value === "utc-to-kst"
+            ? "UTC → KST 변환"
+            : "KST → UTC 변환"
+        );
+      }
+
+      if (useSplit.checked) {
+        steps.push("날짜별 나누기");
+      }
+
+      $("resultStatus").textContent =
+        `처리 순서: ${steps.join(" → ")} → 저장\n` +
+        `최종 저장 데이터: ` +
+        `${finalRows.length.toLocaleString()}행` +
+        (
+          finalRows.length === 0
+            ? "\n선택한 기간에 데이터가 없습니다."
+            : ""
+        );
+
+      saveButton.disabled = finalRows.length === 0;
+    }
+
+    function resetData() {
+      headers = [];
+      originalRows = [];
+      workingRows = [];
+      finalRows = [];
+      rowDates = [];
+      loadedFileName = "";
+      convertedCount = 0;
+
+      placeholder(
+        convertColumn,
+        "먼저 CSV 파일을 선택하세요"
+      );
+
+      placeholder(
+        dateColumn,
+        "먼저 CSV 파일을 선택하세요"
+      );
+
+      placeholder(startDate, "날짜 열을 선택하세요");
+      placeholder(endDate, "날짜 열을 선택하세요");
+
+      convertDirection.disabled = true;
+      saveButton.disabled = true;
+
+      $("convertStatus").textContent =
+        "CSV 파일을 선택해 주세요.";
+
+      $("splitStatus").textContent =
+        "CSV 파일을 선택해 주세요.";
+
+      $("resultStatus").textContent =
+        "CSV 파일을 선택해 주세요.";
+    }
+
+    async function loadFile() {
+      const version = ++loadVersion;
+      const file = fileInput.files[0];
+      const encoding = encodingInput.value;
+
+      resetData();
+
+      if (!file) {
+        $("fileStatus").textContent =
+          "CSV 파일을 선택해 주세요.";
+        return;
+      }
+
+      $("fileStatus").textContent =
+        "파일을 읽는 중입니다...";
+
+      try {
+        const buffer = await file.arrayBuffer();
+
+        if (version !== loadVersion) return;
+
+        const text =
+          new TextDecoder(encoding).decode(buffer);
+
+        const parsed = parseCSV(text);
+
+        if (parsed.length < 2) {
+          throw new Error(
+            "열 이름과 데이터가 있는 CSV 파일을 선택해 주세요."
+          );
+        }
+
+        headers = parsed[0];
+        originalRows = parsed.slice(1);
+        loadedFileName = file.name;
+
+        const guessedIndex = Math.max(
+          0,
+          headers.findIndex(header =>
+            /날짜|일자|일시|date|time/i.test(header)
+          )
+        );
+
+        fillColumns(convertColumn, guessedIndex);
+        fillColumns(dateColumn, guessedIndex);
+
+        $("fileStatus").textContent =
+          `${file.name}\n` +
+          `${headers.length.toLocaleString()}개 열 · ` +
+          `${originalRows.length.toLocaleString()}행`;
+
+        rebuildPipeline(true);
+      } catch (error) {
+        if (version !== loadVersion) return;
+
+        resetData();
+
+        $("fileStatus").textContent =
+          "오류: " + error.message;
+      }
+    }
+
+    function escapeCSV(value) {
+      const text = String(value ?? "");
+
+      return /[",\r\n]/.test(text)
+        ? '"' + text.replace(/"/g, '""') + '"'
+        : text;
+    }
+
+    saveButton.addEventListener("click", () => {
+      updateFinalResult();
+
+      if (saveButton.disabled) return;
+
+      const csv = [headers, ...finalRows]
+        .map(row => row.map(escapeCSV).join(","))
+        .join("\r\n");
+
+      const blob = new Blob(["\uFEFF", csv], {
+        type: "text/csv;charset=utf-8;"
+      });
+
+      const nameParts = [
+        loadedFileName.replace(/\.csv$/i, "")
+      ];
+
+      if (useConvert.checked) {
+        nameParts.push(
+          convertDirection.value === "utc-to-kst"
+            ? "KST"
+            : "UTC"
+        );
+      }
+
+      if (useSplit.checked) {
+        nameParts.push(
+          startDate.value,
+          endDate.value
+        );
+      }
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.download = nameParts.join("_") + ".csv";
+
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      setTimeout(() => {
+        URL.revokeObjectURL(url);
+      }, 1000);
+    });
+
+    fileInput.addEventListener("change", loadFile);
+    encodingInput.addEventListener("change", loadFile);
+
+    useConvert.addEventListener("change", () => {
+      rebuildPipeline();
+    });
+
+    useSplit.addEventListener("change", () => {
+      rebuildPipeline();
+    });
+
+    convertColumn.addEventListener("change", () => {
+      rebuildPipeline();
+    });
+
+    convertDirection.addEventListener("change", () => {
+      rebuildPipeline();
+    });
+
+    dateColumn.addEventListener("change", () => {
+      rebuildPipeline(true);
+    });
+
+    startDate.addEventListener(
+      "change",
+      updateFinalResult
+    );
+
+    endDate.addEventListener(
+      "change",
+      updateFinalResult
+    );
+  </script>
+</body>
+</html>
