@@ -19,11 +19,11 @@
     }
 
     .container {
-      max-width: 760px;
+      max-width: 820px;
       margin: auto;
       padding: 30px;
-      background: white;
       border-radius: 16px;
+      background: white;
       box-shadow: 0 8px 30px #0000000d;
     }
 
@@ -155,6 +155,76 @@
       line-height: 1.7;
     }
 
+    .failure-panel {
+      margin-top: 16px;
+      padding: 14px;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      background: #fff7f7;
+    }
+
+    .failure-panel summary {
+      color: #b91c1c;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .failure-note {
+      margin: 12px 0;
+      color: #64748b;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .failure-table-wrap {
+      max-height: 360px;
+      overflow: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      background: white;
+    }
+
+    .failure-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .failure-table th,
+    .failure-table td {
+      padding: 10px;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .failure-table th {
+      position: sticky;
+      top: 0;
+      background: #f8fafc;
+      white-space: nowrap;
+    }
+
+    .failure-table td:first-child {
+      white-space: nowrap;
+    }
+
+    .failure-table td:nth-child(2) {
+      min-width: 180px;
+      max-width: 320px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .failure-table td:last-child {
+      min-width: 200px;
+    }
+
+    .failure-table tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
     .save-area {
       margin-top: 26px;
       padding-top: 22px;
@@ -229,11 +299,13 @@
       <strong>사용 방법</strong>
       <ul>
         <li>CSV 파일을 불러온 뒤 사용할 기능의 ‘적용’을 체크하세요.</li>
-        <li>두 기능을 사용하면 UTC/KST 변환 후 날짜별 나누기를 진행합니다.</li>
-        <li>맨 아래 저장 버튼으로 최종 결과를 새 CSV로 저장합니다.</li>
+        <li>UTC/KST 변환만 사용하려면 날짜별 나누기를 체크하지 마세요.</li>
+        <li>두 기능을 함께 사용하면 시간대 변환 후 날짜별 나누기를 진행합니다.</li>
+        <li>맨 아래 저장 버튼으로 최종 결과를 저장합니다.</li>
         <li>설정을 바꿔도 원본 파일은 변경되지 않으며 중복 변환되지 않습니다.</li>
         <li>파일은 서버로 전송되지 않습니다.</li>
-        <li>첫 번째 행은 열 이름으로 사용합니다.</li>
+        <li>첫 번째 비어 있지 않은 행을 열 이름으로 사용합니다.</li>
+        <li>모든 셀이 공백이거나 비어 있는 행은 불러오기에서 제외합니다.</li>
         <li>한글이 깨지면 EUC-KR / CP949 인코딩을 선택하세요.</li>
         <li>저장 파일은 UTF-8 CSV 형식입니다.</li>
       </ul>
@@ -244,18 +316,21 @@
         <li>시간대가 없는 값은 선택한 변환 방향의 원본 시간대로 해석합니다.</li>
         <li>Z나 +09:00처럼 시간대가 있으면 해당 시간대를 기준으로 변환합니다.</li>
         <li>결과는 YYYY-MM-DD HH:mm:ss 형식이며 시간대 표시는 붙이지 않습니다.</li>
+        <li>날짜와 시간 사이에는 공백 한 칸이 들어갑니다.</li>
         <li>소수점 이하 값은 자릿수와 끝자리 0까지 그대로 유지합니다.</li>
-        <li>예: .001000, .123456, .123456789</li>
         <li>날짜만 있는 값은 00:00:00으로 처리합니다.</li>
         <li>변환할 수 없는 셀은 원래 값을 유지합니다.</li>
+        <li>실패 내역에서 행 번호, 원본 값, 실패 이유를 확인할 수 있습니다.</li>
+        <li>모든 행이 변환에 실패해도 경고를 표시한 뒤 저장을 허용합니다.</li>
       </ul>
 
       <strong>날짜별 나누기</strong>
       <ul>
-        <li>선택한 열의 실제 날짜만 중복 없이 날짜순으로 표시합니다.</li>
+        <li>선택한 열에 있는 날짜를 중복 없이 날짜순으로 표시합니다.</li>
         <li>UTC/KST 변환을 적용했다면 변환된 데이터에서 날짜를 추출합니다.</li>
+        <li>셀에 표시된 날짜 부분을 기준으로 필터링합니다.</li>
         <li>시작일과 종료일을 모두 포함합니다.</li>
-        <li>날짜를 읽을 수 없는 행은 나누기 결과에서 제외합니다.</li>
+        <li>날짜를 읽을 수 없는 행은 필터링 결과에서 제외합니다.</li>
       </ul>
 
       <strong>지원 날짜 예시</strong>
@@ -282,7 +357,7 @@
 
     <section class="section converter-section">
       <div class="section-header">
-        <h2>UTC/KST 변환기</h2>
+        <h2>UTC/KST 변환</h2>
 
         <label class="apply-label">
           <input id="useConvert" type="checkbox">
@@ -304,6 +379,35 @@
       <div id="convertStatus" class="status" role="status">
         적용하지 않음
       </div>
+
+      <details id="conversionFailures" class="failure-panel" hidden>
+        <summary id="failureSummary">변환 실패 내역</summary>
+
+        <p class="failure-note">
+          행 번호는 빈 행을 제외하고 헤더를 1행으로 계산한 CSV 레코드 번호입니다.
+          셀 내부 줄바꿈은 별도 행으로 세지 않습니다.
+          실패 내역은 날짜별 나누기 전 전체 변환 대상 기준입니다.
+          실패한 셀은 원래 값을 유지합니다.
+        </p>
+
+        <div
+          class="failure-table-wrap"
+          role="region"
+          aria-label="변환 실패 내역"
+          tabindex="0"
+        >
+          <table class="failure-table">
+            <thead>
+              <tr>
+                <th scope="col">CSV 행 번호</th>
+                <th scope="col">원본 값</th>
+                <th scope="col">실패 이유</th>
+              </tr>
+            </thead>
+            <tbody id="failureTableBody"></tbody>
+          </table>
+        </div>
+      </details>
     </section>
 
     <section class="section split-section">
@@ -311,7 +415,7 @@
         <h2>날짜별 나누기</h2>
 
         <label class="apply-label">
-          <input id="useSplit" type="checkbox" checked>
+          <input id="useSplit" type="checkbox">
           적용
         </label>
       </div>
@@ -338,11 +442,10 @@
       </div>
 
       <div id="splitStatus" class="status" role="status">
-        CSV 파일을 선택해 주세요.
+        적용하지 않음
       </div>
     </section>
 
-    <!-- 두 기능 칸 밖의 공통 저장 영역 -->
     <div class="save-area">
       <div id="resultStatus" class="status" role="status">
         CSV 파일을 선택해 주세요.
@@ -358,6 +461,8 @@
   </main>
 
   <script>
+    "use strict";
+
     const $ = id => document.getElementById(id);
 
     const fileInput = $("file");
@@ -376,6 +481,7 @@
     let workingRows = [];
     let finalRows = [];
     let rowDates = [];
+
     let loadedFileName = "";
     let loadVersion = 0;
     let convertedCount = 0;
@@ -397,6 +503,7 @@
       select.disabled = true;
     }
 
+    // 쉼표, 따옴표, 셀 내부 줄바꿈을 처리합니다.
     function parseCSV(text) {
       text = text.replace(/^\uFEFF/, "");
 
@@ -449,6 +556,7 @@
         result.push(row);
       }
 
+      // 모든 셀이 공백이거나 비어 있는 행은 제외합니다.
       return result.filter(row =>
         row.some(value => value.trim() !== "")
       );
@@ -458,7 +566,7 @@
       return String(value).padStart(length, "0");
     }
 
-    // 브라우저의 로컬 시간대에 영향을 받지 않는 날짜 생성·검증
+    // 브라우저의 로컬 시간대에 영향을 받지 않도록 UTC로 검증합니다.
     function checkedDate(
       year,
       month,
@@ -488,7 +596,7 @@
       return date;
     }
 
-    // 날짜별 나누기: 셀에 표시된 날짜 부분을 추출
+    // 날짜별 나누기용: 셀에 표시된 날짜 부분을 추출합니다.
     function normalizeDate(value) {
       const text = String(value ?? "").trim();
 
@@ -498,20 +606,37 @@
         ) ||
         text.match(/^(\d{4})(\d{2})(\d{2})$/);
 
-      if (!match) return null;
+      if (!match) {
+        return null;
+      }
 
       const year = Number(match[1]);
       const month = Number(match[2]);
       const day = Number(match[3]);
 
-      if (!checkedDate(year, month, day)) return null;
+      if (!checkedDate(year, month, day)) {
+        return null;
+      }
 
       return `${pad(year, 4)}-${pad(month)}-${pad(day)}`;
     }
 
-    // UTC/KST 변환: 소수점 이하 문자열을 원문 그대로 보존
-    function convertDateTime(value) {
-      const text = String(value ?? "").trim();
+    // 변환 결과와 실패 이유를 반환합니다.
+    function convertDateTimeDetailed(value) {
+      const fail = reason => ({
+        value: null,
+        reason
+      });
+
+      if (value === undefined || value === null) {
+        return fail("이 행에 선택한 열의 셀이 없습니다.");
+      }
+
+      const text = String(value).trim();
+
+      if (!text) {
+        return fail("빈 값입니다.");
+      }
 
       const match =
         text.match(
@@ -519,32 +644,83 @@
         ) ||
         text.match(/^(\d{4})(\d{2})(\d{2})$/);
 
-      if (!match) return null;
+      if (!match) {
+        return fail(
+          "지원하지 않는 날짜·시간 형식입니다. " +
+          "예: 2026-11-13 15:30:00.001000"
+        );
+      }
 
-      // .001000 등의 자릿수와 끝자리 0을 유지
+      const year = Number(match[1]);
+      const month = Number(match[2]);
+      const day = Number(match[3]);
+      const hour = Number(match[4] || 0);
+      const minute = Number(match[5] || 0);
+      const second = Number(match[6] || 0);
+
+      // 소수 초는 숫자로 변환하지 않고 문자열 그대로 보존합니다.
       const fraction = match[7] || "";
+      const zone = match[8];
 
-      // 소수 초는 계산에 넣지 않고 정수 초까지만 변환
+      if (month < 1 || month > 12) {
+        return fail(
+          `월이 범위를 벗어났습니다: ${month} (1~12)`
+        );
+      }
+
+      if (day < 1 || day > 31) {
+        return fail(
+          `일이 범위를 벗어났습니다: ${day} (1~31)`
+        );
+      }
+
+      if (!checkedDate(year, month, day)) {
+        return fail(
+          "존재하지 않는 날짜입니다. " +
+          "월별 마지막 날짜와 윤년 여부를 확인하세요."
+        );
+      }
+
+      if (hour < 0 || hour > 23) {
+        return fail(
+          `시가 범위를 벗어났습니다: ${hour} (0~23)`
+        );
+      }
+
+      if (minute < 0 || minute > 59) {
+        return fail(
+          `분이 범위를 벗어났습니다: ${minute} (0~59)`
+        );
+      }
+
+      if (second < 0 || second > 59) {
+        return fail(
+          `초가 범위를 벗어났습니다: ${second} (0~59). ` +
+          "윤초(60초)는 지원하지 않습니다."
+        );
+      }
+
       const date = checkedDate(
-        Number(match[1]),
-        Number(match[2]),
-        Number(match[3]),
-        Number(match[4] || 0),
-        Number(match[5] || 0),
-        Number(match[6] || 0),
+        year,
+        month,
+        day,
+        hour,
+        minute,
+        second,
         0
       );
 
-      if (!date) return null;
+      if (!date) {
+        return fail("유효하지 않은 날짜·시간입니다.");
+      }
 
       const toKST =
         convertDirection.value === "utc-to-kst";
 
       let sourceOffset = toKST ? 0 : 540;
       const targetOffset = toKST ? 540 : 0;
-      const zone = match[8];
 
-      // 명시된 시간대가 있으면 우선 적용
+      // 시간대가 명시되어 있으면 해당 시간대를 우선 적용합니다.
       if (zone) {
         if (zone.toUpperCase() === "Z") {
           sourceOffset = 0;
@@ -553,7 +729,9 @@
             /^([+-])(\d{2}):?(\d{2})$/
           );
 
-          if (!parts) return null;
+          if (!parts) {
+            return fail("잘못된 시간대 형식입니다.");
+          }
 
           const hours = Number(parts[2]);
           const minutes = Number(parts[3]);
@@ -563,7 +741,10 @@
             minutes > 59 ||
             (hours === 14 && minutes !== 0)
           ) {
-            return null;
+            return fail(
+              `시간대 오프셋이 허용 범위를 벗어났습니다: ${zone}. ` +
+              "최대 ±14:00이며 분은 0~59여야 합니다."
+            );
           }
 
           sourceOffset =
@@ -577,23 +758,99 @@
         (targetOffset - sourceOffset) * 60000
       );
 
-      const year = output.getUTCFullYear();
+      const outputYear = output.getUTCFullYear();
 
-      if (year < 0 || year > 9999) return null;
+      if (
+        !Number.isFinite(output.getTime()) ||
+        outputYear < 0 ||
+        outputYear > 9999
+      ) {
+        return fail(
+          "변환 결과가 지원 연도 범위(0000~9999)를 벗어납니다."
+        );
+      }
 
-      let result =
-        `${pad(year, 4)}-` +
-        `${pad(output.getUTCMonth() + 1)}-` +
-        `${pad(output.getUTCDate())} ` +
-        `${pad(output.getUTCHours())}:` +
-        `${pad(output.getUTCMinutes())}:` +
-        `${pad(output.getUTCSeconds())}`;
+      // 날짜와 시간을 각각 생성합니다.
+      const datePart = [
+        pad(outputYear, 4),
+        pad(output.getUTCMonth() + 1),
+        pad(output.getUTCDate())
+      ].join("-");
 
+      const timePart = [
+        pad(output.getUTCHours()),
+        pad(output.getUTCMinutes()),
+        pad(output.getUTCSeconds())
+      ].join(":");
+
+      // 중요: 날짜와 시간 사이 공백을 명시적으로 추가합니다.
+      let result = datePart + " " + timePart;
+
+      // 소수점 이하 자릿수와 끝자리 0을 유지합니다.
       if (fraction) {
         result += "." + fraction;
       }
 
-      return result;
+      return {
+        value: result,
+        reason: ""
+      };
+    }
+
+    function renderConversionFailures(failures) {
+      const panel = $("conversionFailures");
+      const body = $("failureTableBody");
+
+      body.replaceChildren();
+
+      if (failures.length === 0) {
+        panel.hidden = true;
+        panel.open = false;
+        return;
+      }
+
+      $("failureSummary").textContent =
+        `변환 실패 내역 (${failures.length.toLocaleString()}행)`;
+
+      const fragment = document.createDocumentFragment();
+
+      failures.forEach(failure => {
+        const tr = document.createElement("tr");
+
+        let originalValue;
+
+        if (
+          failure.originalValue === undefined ||
+          failure.originalValue === null
+        ) {
+          originalValue = "(셀 없음)";
+        } else if (
+          String(failure.originalValue).trim() === ""
+        ) {
+          originalValue = "(빈 값)";
+        } else {
+          originalValue = String(failure.originalValue);
+        }
+
+        const values = [
+          String(failure.rowNumber),
+          originalValue,
+          failure.reason
+        ];
+
+        values.forEach(value => {
+          const td = document.createElement("td");
+
+          // CSV 내용을 HTML로 해석하지 않습니다.
+          td.textContent = value;
+          tr.appendChild(td);
+        });
+
+        fragment.appendChild(tr);
+      });
+
+      body.appendChild(fragment);
+      panel.hidden = false;
     }
 
     function fillColumns(select, selectedIndex) {
@@ -635,7 +892,7 @@
         !endDate.value;
     }
 
-    // 항상 원본 데이터에서 다시 처리하여 중복 변환 방지
+    // 항상 원본에서 처리하여 중복 시간대 변환을 방지합니다.
     function rebuildPipeline(resetRange = false) {
       syncControls();
 
@@ -646,40 +903,56 @@
 
       convertedCount = 0;
       let example = "";
+      const failures = [];
 
       if (useConvert.checked) {
         const column = Number(convertColumn.value);
 
-        workingRows = originalRows.map(row => {
-          const converted = convertDateTime(row[column]);
+        workingRows = originalRows.map((row, index) => {
+          const result =
+            convertDateTimeDetailed(row[column]);
 
-          if (converted === null) {
+          if (result.value === null) {
+            failures.push({
+              rowNumber: index + 2,
+              originalValue: row[column],
+              reason: result.reason
+            });
+
+            // 실패한 셀은 원래 값을 유지합니다.
             return row;
           }
 
           const copy = [...row];
-          copy[column] = converted;
+          copy[column] = result.value;
+
           convertedCount++;
 
           if (!example) {
-            example = `${row[column]} → ${converted}`;
+            example = `${row[column]} → ${result.value}`;
           }
 
           return copy;
         });
 
         $("convertStatus").textContent =
-          `변환 가능: ${convertedCount.toLocaleString()}행\n` +
-          `변환 불가·빈 값: ` +
-          `${(originalRows.length - convertedCount).toLocaleString()}행 ` +
-          `(원래 값 유지)` +
-          (example ? `\n예시: ${example}` : "");
+          `변환 성공: ${convertedCount.toLocaleString()}행\n` +
+          `변환 실패: ${failures.length.toLocaleString()}행 ` +
+          "(원래 값 유지)" +
+          (example ? `\n예시: ${example}` : "") +
+          (
+            failures.length > 0
+              ? "\n아래 ‘변환 실패 내역’을 펼쳐 확인하세요."
+              : ""
+          );
       } else {
         workingRows = originalRows;
         $("convertStatus").textContent = "적용하지 않음";
       }
 
-      // 변환 적용 시 변환된 데이터에서 날짜 목록 생성
+      renderConversionFailures(failures);
+
+      // 시간대 변환 후의 데이터에서 날짜를 추출합니다.
       const oldStart = resetRange ? "" : startDate.value;
       const oldEnd = resetRange ? "" : endDate.value;
       const column = Number(dateColumn.value);
@@ -732,72 +1005,74 @@
       finalRows = [];
       saveButton.disabled = true;
 
-      if (!headers.length) return;
-
-      let error = "";
-
-      if (useSplit.checked) {
-        if (!startDate.value || !endDate.value) {
-          error =
-            "선택한 열에서 지원하는 날짜를 찾지 못했습니다.";
-
-          $("splitStatus").textContent = error;
-        } else if (startDate.value > endDate.value) {
-          error =
-            "시작일은 종료일보다 늦을 수 없습니다.";
-
-          $("splitStatus").textContent = error;
-        } else {
-          let invalidCount = 0;
-
-          finalRows = workingRows.filter((row, index) => {
-            const date = rowDates[index];
-
-            if (!date) {
-              invalidCount++;
-              return false;
-            }
-
-            return (
-              date >= startDate.value &&
-              date <= endDate.value
-            );
-          });
-
-          $("splitStatus").textContent =
-            `선택 기간: ` +
-            `${startDate.value} ~ ${endDate.value}\n` +
-            `추출 데이터: ` +
-            `${finalRows.length.toLocaleString()}행\n` +
-            `날짜를 읽을 수 없어 제외: ` +
-            `${invalidCount.toLocaleString()}행`;
-        }
-      } else {
-        finalRows = workingRows;
-        $("splitStatus").textContent = "적용하지 않음";
+      if (!headers.length) {
+        $("resultStatus").textContent =
+          "CSV 파일을 선택해 주세요.";
+        return;
       }
 
-      if (!useConvert.checked && !useSplit.checked) {
+      const convertEnabled = useConvert.checked;
+      const splitEnabled = useSplit.checked;
+
+      if (!convertEnabled && !splitEnabled) {
+        $("splitStatus").textContent = "적용하지 않음";
+
         $("resultStatus").textContent =
           "사용할 기능의 ‘적용’을 하나 이상 체크해 주세요.";
         return;
       }
 
-      if (error) {
-        $("resultStatus").textContent = error;
-        return;
-      }
+      // 날짜별 나누기를 적용할 때만 날짜 범위를 검사합니다.
+      if (splitEnabled) {
+        if (!startDate.value || !endDate.value) {
+          const message =
+            "선택한 열에서 지원하는 날짜를 찾지 못했습니다.";
 
-      if (useConvert.checked && convertedCount === 0) {
-        $("resultStatus").textContent =
-          "변환 가능한 날짜·시간이 없습니다.\n" +
-          "변환 열을 확인하거나 UTC/KST 변환 적용을 해제해 주세요.";
-        return;
+          $("splitStatus").textContent = message;
+          $("resultStatus").textContent = message;
+          return;
+        }
+
+        if (startDate.value > endDate.value) {
+          const message =
+            "시작일은 종료일보다 늦을 수 없습니다.";
+
+          $("splitStatus").textContent = message;
+          $("resultStatus").textContent = message;
+          return;
+        }
+
+        let invalidCount = 0;
+
+        finalRows = workingRows.filter((row, index) => {
+          const date = rowDates[index];
+
+          if (!date) {
+            invalidCount++;
+            return false;
+          }
+
+          return (
+            date >= startDate.value &&
+            date <= endDate.value
+          );
+        });
+
+        $("splitStatus").textContent =
+          `선택 기간: ${startDate.value} ~ ${endDate.value}\n` +
+          `추출 데이터: ${finalRows.length.toLocaleString()}행\n` +
+          `날짜를 읽을 수 없어 제외: ` +
+          `${invalidCount.toLocaleString()}행`;
+      } else {
+        // 변환 단독 사용은 날짜와 관계없이 전체 행을 저장합니다.
+        finalRows = workingRows;
+        $("splitStatus").textContent = "적용하지 않음";
       }
 
       const steps = [];
+      const messages = [];
 
-      if (useConvert.checked) {
+      if (convertEnabled) {
         steps.push(
           convertDirection.value === "utc-to-kst"
             ? "UTC → KST 변환"
@@ -805,20 +1080,57 @@
         );
       }
 
-      if (useSplit.checked) {
+      if (splitEnabled) {
         steps.push("날짜별 나누기");
       }
 
-      $("resultStatus").textContent =
-        `처리 순서: ${steps.join(" → ")} → 저장\n` +
-        `최종 저장 데이터: ` +
-        `${finalRows.length.toLocaleString()}행` +
-        (
-          finalRows.length === 0
-            ? "\n선택한 기간에 데이터가 없습니다."
-            : ""
+      messages.push(
+        `처리 순서: ${steps.join(" → ")} → 저장`,
+        `최종 저장 데이터: ${finalRows.length.toLocaleString()}행`
+      );
+
+      if (convertEnabled) {
+        const failedCount =
+          originalRows.length - convertedCount;
+
+        messages.push(
+          `전체 변환 대상 기준: 성공 ` +
+          `${convertedCount.toLocaleString()}행 / 실패 ` +
+          `${failedCount.toLocaleString()}행`
         );
 
+        if (failedCount > 0) {
+          messages.push(
+            "변환 실패 셀은 원래 값을 유지합니다." +
+            (
+              splitEnabled
+                ? " 저장 여부는 날짜별 나누기 조건에 따릅니다."
+                : " 실패한 행도 저장에 포함됩니다."
+            )
+          );
+        }
+
+        // 모두 실패하더라도 경고만 표시하고 저장을 허용합니다.
+        if (convertedCount === 0) {
+          messages.push(
+            "⚠ 변환에 성공한 행이 없습니다. " +
+            "변환할 열과 실패 내역을 확인하세요. " +
+            "저장되는 셀 값은 원본과 같습니다."
+          );
+        }
+      }
+
+      if (finalRows.length === 0) {
+        messages.push(
+          splitEnabled
+            ? "선택한 기간에 저장할 데이터가 없습니다."
+            : "저장할 데이터가 없습니다."
+        );
+      }
+
+      $("resultStatus").textContent = messages.join("\n");
+
+      // 변환 성공 개수가 아닌 최종 데이터 유무로 판단합니다.
       saveButton.disabled = finalRows.length === 0;
     }
 
@@ -828,6 +1140,7 @@
       workingRows = [];
       finalRows = [];
       rowDates = [];
+
       loadedFileName = "";
       convertedCount = 0;
 
@@ -855,6 +1168,8 @@
 
       $("resultStatus").textContent =
         "CSV 파일을 선택해 주세요.";
+
+      renderConversionFailures([]);
     }
 
     async function loadFile() {
@@ -876,7 +1191,10 @@
       try {
         const buffer = await file.arrayBuffer();
 
-        if (version !== loadVersion) return;
+        // 파일이나 인코딩이 바뀌면 이전 읽기 결과를 무시합니다.
+        if (version !== loadVersion) {
+          return;
+        }
 
         const text =
           new TextDecoder(encoding).decode(buffer);
@@ -910,7 +1228,9 @@
 
         rebuildPipeline(true);
       } catch (error) {
-        if (version !== loadVersion) return;
+        if (version !== loadVersion) {
+          return;
+        }
 
         resetData();
 
@@ -930,12 +1250,15 @@
     saveButton.addEventListener("click", () => {
       updateFinalResult();
 
-      if (saveButton.disabled) return;
+      if (saveButton.disabled) {
+        return;
+      }
 
       const csv = [headers, ...finalRows]
         .map(row => row.map(escapeCSV).join(","))
         .join("\r\n");
 
+      // 엑셀 등에서 한글을 인식하기 쉽도록 UTF-8 BOM을 추가합니다.
       const blob = new Blob(["\uFEFF", csv], {
         type: "text/csv;charset=utf-8;"
       });
